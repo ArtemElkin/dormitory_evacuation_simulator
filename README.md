@@ -1,2 +1,2 @@
-# dormitory_evacuation_simulator
-Dormitory Evacuation Simulator
+# Симулятор эвакуации из общежития
+Приложение для отработки действий во время эвакуации при пожаре в студенческом общежитии.
