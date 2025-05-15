@@ -3,32 +3,32 @@ using Scripts.Interfaces;
 
 public abstract class BaseInteractable : MonoBehaviour, IInteractable
 {
-    [SerializeField] protected string interactionPrompt = "Press E to interact";
-    [SerializeField] protected bool canInteract = true;
+    [SerializeField] protected string _interactionPrompt = "Press E to interact";
+    [SerializeField] protected bool _canInteract = true;
     
-    protected Renderer objectRenderer;
-    protected Material originalMaterial;
-    [SerializeField] protected Material highlightMaterial;
+    protected Renderer _objectRenderer;
+    protected Material _originalMaterial;
+    [SerializeField] protected Material _highlightMaterial;
     
     protected virtual void Start()
     {
-        objectRenderer = GetComponent<Renderer>();
-        if (objectRenderer != null)
+        _objectRenderer = GetComponent<Renderer>();
+        if (_objectRenderer != null)
         {
-            originalMaterial = objectRenderer.material;
+            _originalMaterial = _objectRenderer.material;
         }
     }
     
-    public virtual string InteractionPrompt => interactionPrompt;
-    public virtual bool CanInteract => canInteract;
+    public virtual string InteractionPrompt => _interactionPrompt;
+    public virtual bool CanInteract => _canInteract;
     
     public abstract void Interact(IPlayer player);
     
     public virtual void Highlight(bool highlight)
     {
-        if (objectRenderer != null && highlightMaterial != null)
+        if (_objectRenderer != null && _highlightMaterial != null)
         {
-            objectRenderer.material = highlight ? highlightMaterial : originalMaterial;
+            _objectRenderer.material = highlight ? _highlightMaterial : _originalMaterial;
         }
     }
     

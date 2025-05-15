@@ -4,24 +4,24 @@ using TMPro;
 using Scripts.Interfaces;
 public class InteractionManager : MonoBehaviour
 {
-    [SerializeField] private float interactionDistance = 2f;
-    [SerializeField] private LayerMask interactableLayer;
-    [SerializeField] private TextMeshProUGUI interactionText;
-    [SerializeField] private Image interactionPrompt;
+    [SerializeField] private float _interactionDistance = 2f;
+    [SerializeField] private LayerMask _interactableLayer;
+    [SerializeField] private TextMeshProUGUI _interactionText;
+    [SerializeField] private Image _interactionPrompt;
     
-    private Camera mainCamera;
-    private IInteractable currentInteractable;
+    private Camera _mainCamera;
+    private IInteractable _currentInteractable;
     
     private void Start()
     {
-        mainCamera = Camera.main;
-        if (interactionText != null)
+        _mainCamera = Camera.main;
+        if (_interactionText != null)
         {
-            interactionText.gameObject.SetActive(false);
+            _interactionText.gameObject.SetActive(false);
         }
-        if (interactionPrompt != null)
+        if (_interactionPrompt != null)
         {
-            interactionPrompt.gameObject.SetActive(false);
+            _interactionPrompt.gameObject.SetActive(false);
         }
     }
     
@@ -29,14 +29,14 @@ public class InteractionManager : MonoBehaviour
     {
         CheckForInteractable();
         
-        if (currentInteractable != null && currentInteractable.CanInteract)
+        if (_currentInteractable != null && _currentInteractable.CanInteract)
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
                 var player = GetComponent<IPlayer>();
                 if (player != null)
                 {
-                    currentInteractable.Interact(player);
+                    _currentInteractable.Interact(player);
                 }
             }
         }
@@ -44,18 +44,18 @@ public class InteractionManager : MonoBehaviour
     
     private void CheckForInteractable()
     {
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         
-        if (Physics.Raycast(ray, out hit, interactionDistance, interactableLayer))
+        if (Physics.Raycast(ray, out hit, _interactionDistance, _interactableLayer))
         {
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
             
             if (interactable != null && interactable.CanInteract)
             {
-                if (currentInteractable != interactable)
+                if (_currentInteractable != interactable)
                 {
-                    currentInteractable = interactable;
+                    _currentInteractable = interactable;
                     ShowInteractionUI(true, interactable.InteractionPrompt);
                 }
             }
@@ -72,23 +72,23 @@ public class InteractionManager : MonoBehaviour
     
     private void ShowInteractionUI(bool show, string prompt = "")
     {
-        if (interactionText != null)
+        if (_interactionText != null)
         {
-            interactionText.gameObject.SetActive(show);
-            interactionText.text = prompt;
+            _interactionText.gameObject.SetActive(show);
+            _interactionText.text = prompt;
         }
-        if (interactionPrompt != null)
+        if (_interactionPrompt != null)
         {
-            interactionPrompt.gameObject.SetActive(show);
+            _interactionPrompt.gameObject.SetActive(show);
         }
     }
     
     private void ClearInteraction()
     {
-        if (currentInteractable != null)
+        if (_currentInteractable != null)
         {
-            currentInteractable.Highlight(false);
-            currentInteractable = null;
+            _currentInteractable.Highlight(false);
+            _currentInteractable = null;
             ShowInteractionUI(false);
         }
     }

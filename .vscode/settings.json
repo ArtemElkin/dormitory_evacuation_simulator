@@ -51,5 +51,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "DIPLOM.sln"
+    "dotnet.defaultSolution": "DIPLOM.sln",
+    "dotnet.preferCSharpExtension": true
 }

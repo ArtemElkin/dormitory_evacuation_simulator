@@ -6,15 +6,15 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float lookSpeed = 2f;
 
-    private CharacterController controller;
-    private Transform cam;
+    private CharacterController _controller;
+    private Transform _cam;
 
-    private float rotationX;
+    private float _rotationX;
 
     void Start()
     {
-        controller = GetComponent<CharacterController>();
-        cam = Camera.main.transform;
+        _controller = GetComponent<CharacterController>();
+        _cam = Camera.main.transform;
         Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -23,14 +23,14 @@ public class PlayerController : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 move = transform.right * h + transform.forward * v;
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        _controller.Move(move * moveSpeed * Time.deltaTime);
 
         float mouseX = Input.GetAxis("Mouse X") * lookSpeed;
         transform.Rotate(Vector3.up * mouseX);
 
         float mouseY = Input.GetAxis("Mouse Y") * lookSpeed;
-        rotationX -= mouseY;
-        rotationX = Mathf.Clamp(rotationX, -80, 80);
-        cam.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        _rotationX -= mouseY;
+        _rotationX = Mathf.Clamp(_rotationX, -80, 80);
+        _cam.localRotation = Quaternion.Euler(_rotationX, 0, 0);
     }
 }

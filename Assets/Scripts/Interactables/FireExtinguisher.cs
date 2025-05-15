@@ -3,25 +3,28 @@ using Scripts.Interfaces;
 
 public class FireExtinguisher : BaseInteractable
 {
-    [SerializeField] private float extinguishingPower = 10f;
-    [SerializeField] private float useDuration = 10f;
-    [SerializeField] private ParticleSystem extinguisherEffect;
+    [Header("Extinguisher Settings")]
+    [SerializeField] private float _extinguishingPower = 10f;
+    [SerializeField] private float _useDuration = 10f;
+    [SerializeField] private ParticleSystem _extinguisherEffect;
+    [SerializeField] private Transform _nozzleTransform; // Точка выхода пены
     
-    private bool isBeingUsed = false;
-    private float currentUseTime = 0f;
+    private bool _isBeingUsed = false;
+    private float _currentUseTime = 0f;
+    private bool _isPickedUp = false;
     
     protected override void Start()
     {
         base.Start();
-        if (extinguisherEffect != null)
+        if (_extinguisherEffect != null)
         {
-            extinguisherEffect.Stop();
+            _extinguisherEffect.Stop();
         }
     }
     
     public override void Interact(IPlayer player)
     {
-        if (!isBeingUsed)
+        if (!_isBeingUsed && _isPickedUp)
         {
             StartExtinguishing();
         }
@@ -29,11 +32,11 @@ public class FireExtinguisher : BaseInteractable
     
     private void Update()
     {
-        if (isBeingUsed)
+        if (_isBeingUsed)
         {
-            currentUseTime += Time.deltaTime;
+            _currentUseTime += Time.deltaTime;
             
-            if (currentUseTime >= useDuration)
+            if (_currentUseTime >= _useDuration)
             {
                 StopExtinguishing();
             }
@@ -47,7 +50,7 @@ public class FireExtinguisher : BaseInteractable
                 IFire fire = hit.collider.GetComponent<IFire>();
                 if (fire != null)
                 {
-                    fire.Extinguish(extinguishingPower * Time.deltaTime);
+                    fire.Extinguish(_extinguishingPower * Time.deltaTime);
                 }
             }
         }
@@ -55,20 +58,45 @@ public class FireExtinguisher : BaseInteractable
     
     private void StartExtinguishing()
     {
-        isBeingUsed = true;
-        currentUseTime = 0f;
-        if (extinguisherEffect != null)
+        _isBeingUsed = true;
+        _currentUseTime = 0f;
+        if (_extinguisherEffect != null)
         {
-            extinguisherEffect.Play();
+            _extinguisherEffect.Play();
         }
     }
     
     private void StopExtinguishing()
     {
-        isBeingUsed = false;
-        if (extinguisherEffect != null)
+        _isBeingUsed = false;
+        if (_extinguisherEffect != null)
         {
-            extinguisherEffect.Stop();
+            _extinguisherEffect.Stop();
+        }
+    }
+    
+    // Вызывается при подборе предмета
+    public void OnPickup()
+    {
+        _isPickedUp = true;
+        if (_extinguisherEffect != null)
+        {
+            _extinguisherEffect.transform.SetParent(_nozzleTransform);
+            _extinguisherEffect.transform.localPosition = Vector3.zero;
+            _extinguisherEffect.transform.localRotation = Quaternion.identity;
+        }
+    }
+    
+    // Вызывается при выбрасывании предмета
+    public void OnDrop()
+    {
+        _isPickedUp = false;
+        StopExtinguishing();
+        if (_extinguisherEffect != null)
+        {
+            _extinguisherEffect.transform.SetParent(transform);
+            _extinguisherEffect.transform.localPosition = Vector3.zero;
+            _extinguisherEffect.transform.localRotation = Quaternion.identity;
         }
     }
 } 
