@@ -6,10 +6,10 @@ public class PlayerInventory : MonoBehaviour
     [Header("Item Settings")]
     [SerializeField] private Transform _rightHandTransform; // Точка крепления предмета в правой руке
     [SerializeField] private float _pickupDistance = 2f;    // Дистанция подбора предмета
-    [SerializeField] private LayerMask _interactableLayer;  // Слой интерактивных предметов
+    [SerializeField] private LayerMask _pickableLayer;  // Слой интерактивных предметов
     
-    private GameObject _currentItem;                        // Текущий предмет в руках
-    private IInteractable _currentInteractable;            // Интерфейс текущего предмета
+    private GameObject _currentItem;
+    private IPickable _currentPickable;
     
     private void Update()
     {
@@ -26,10 +26,14 @@ public class PlayerInventory : MonoBehaviour
             }
         }
         
-        // Использование предмета правой левой кнопкой мыши
+        // Использование предмета при зажатии левой кнопки мыши
         if (Input.GetMouseButton(0) && _currentItem != null)
         {
             UseItem();
+        }
+        else if (Input.GetMouseButtonUp(0) && _currentItem != null)
+        {
+            StopUsingItem();
         }
     }
     
@@ -37,30 +41,26 @@ public class PlayerInventory : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        
-        if (Physics.Raycast(ray, out hit, _pickupDistance, _interactableLayer))
+        if (Physics.Raycast(ray, out hit, _pickupDistance, _pickableLayer))
         {
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-            if (interactable != null)
+            IPickable pickable = hit.collider.GetComponent<IPickable>();
+            if (pickable != null)
             {
-                PickupItem(hit.collider.gameObject, interactable);
+                PickupItem(hit.collider.gameObject, pickable);
             }
         }
     }
     
-    private void PickupItem(GameObject item, IInteractable interactable)
+    private void PickupItem(GameObject item, IPickable pickable)
     {
         _currentItem = item;
-        _currentInteractable = interactable;
-        
-        // Отключаем физику и коллайдеры
+        _currentPickable = pickable;
         Rigidbody rb = _currentItem.GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
-        
         Collider col = _currentItem.GetComponent<Collider>();
         if (col != null)
         {
@@ -71,34 +71,20 @@ public class PlayerInventory : MonoBehaviour
         _currentItem.transform.SetParent(_rightHandTransform);
         _currentItem.transform.localPosition = Vector3.zero;
         _currentItem.transform.localRotation = Quaternion.identity;
-        
-        // Вызываем метод OnPickup, если он есть
-        FireExtinguisher extinguisher = _currentItem.GetComponent<FireExtinguisher>();
-        if (extinguisher != null)
-        {
-            extinguisher.OnPickup();
-        }
+        pickable.OnPickup();
     }
     
     private void DropItem()
     {
         if (_currentItem != null)
         {
-            // Вызываем метод OnDrop, если он есть
-            FireExtinguisher extinguisher = _currentItem.GetComponent<FireExtinguisher>();
-            if (extinguisher != null)
-            {
-                extinguisher.OnDrop();
-            }
-            
-            // Включаем физику и коллайдеры
+            _currentPickable.OnDrop();
             Rigidbody rb = _currentItem.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = false;
                 rb.useGravity = true;
             }
-            
             Collider col = _currentItem.GetComponent<Collider>();
             if (col != null)
             {
@@ -110,17 +96,18 @@ public class PlayerInventory : MonoBehaviour
             
             // Бросаем предмет перед игроком
             _currentItem.transform.position = transform.position + transform.forward * 1f;
-            
             _currentItem = null;
-            _currentInteractable = null;
+            _currentPickable = null;
         }
     }
     
     private void UseItem()
     {
-        if (_currentInteractable != null)
-        {
-            _currentInteractable.Interact(GetComponent<IPlayer>());
-        }
+        _currentPickable?.Use();
+    }
+    
+    private void StopUsingItem()
+    {
+        _currentPickable?.StopUse();
     }
 } 

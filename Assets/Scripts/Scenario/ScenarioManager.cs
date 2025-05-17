@@ -7,7 +7,7 @@ public class ScenarioManager : MonoBehaviour
     [SerializeField] private GameObject _firePrefab;
     [SerializeField] private Dictionary<string, GameObject> _interactablePrefabs;
     
-    private List<FireController> _activeFires = new List<FireController>();
+    private List<BaseFire> _activeFires = new List<BaseFire>();
     private float _scenarioTimer;
     private bool _isScenarioActive;
     
@@ -19,17 +19,7 @@ public class ScenarioManager : MonoBehaviour
         }
     }
     
-    private void Update()
-    {
-        if (_isScenarioActive)
-        {
-            _scenarioTimer -= Time.deltaTime;
-            if (_scenarioTimer <= 0)
-            {
-                EndScenario(false);
-            }
-        }
-    }
+
     
     public void LoadScenario(ScenarioConfig scenario)
     {
@@ -42,9 +32,6 @@ public class ScenarioManager : MonoBehaviour
         // Очистка предыдущего сценария
         ClearScenario();
         
-        // Инициализация таймера
-        _scenarioTimer = _currentScenario.timeLimit;
-        _isScenarioActive = true;
         
         // Создание очагов возгорания
         foreach (var firePoint in _currentScenario.firePoints)
@@ -59,15 +46,15 @@ public class ScenarioManager : MonoBehaviour
         }
     }
     
-    private void CreateFirePoint(ScenarioConfig.FirePoint firePoint)
+    private void CreateFirePoint(FirePoint firePoint)
     {
         if (_firePrefab != null)
         {
-            GameObject fireObject = Instantiate(_firePrefab, firePoint.position, Quaternion.identity);
-            FireController fireController = fireObject.GetComponent<FireController>();
-            if (fireController != null)
+            GameObject fireObject = Instantiate(_firePrefab, firePoint.transform.position, Quaternion.identity, firePoint.transform);
+            BaseFire fire = fireObject.GetComponent<BaseFire>();
+            if (fire != null)
             {
-                _activeFires.Add(fireController);
+                _activeFires.Add(fire);
             }
         }
     }

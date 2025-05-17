@@ -6,14 +6,6 @@ using System.Collections.Generic;
 public class ScenarioConfig : ScriptableObject
 {
     [Serializable]
-    public class FirePoint
-    {
-        public Vector3 position;
-        public float initialIntensity;
-        public float spreadRate;
-    }
-    
-    [Serializable]
     public class InteractableObject
     {
         public string objectId;
@@ -25,7 +17,6 @@ public class ScenarioConfig : ScriptableObject
     [Header("Scenario Settings")]
     public string scenarioName;
     public string description;
-    public float timeLimit = 300f; // 5 минут
     
     [Header("Fire Points")]
     public List<FirePoint> firePoints = new List<FirePoint>();

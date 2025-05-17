@@ -1,102 +1,80 @@
 using UnityEngine;
 using Scripts.Interfaces;
 
-public class FireExtinguisher : BaseInteractable
+// Не забудь добавить этот using, если класс ParticleSystemPool в другом namespace
+// using YourNamespace;
+
+public class FireExtinguisher : MonoBehaviour, IPickable
 {
     [Header("Extinguisher Settings")]
     [SerializeField] private float _extinguishingPower = 10f;
     [SerializeField] private float _useDuration = 10f;
-    [SerializeField] private ParticleSystem _extinguisherEffect;
-    [SerializeField] private Transform _nozzleTransform; // Точка выхода пены
-    
+    [SerializeField] private ParticleSystemPool _foamPool;
+    [SerializeField] private Transform _nozzleTransform;
+
     private bool _isBeingUsed = false;
     private float _currentUseTime = 0f;
     private bool _isPickedUp = false;
-    
-    protected override void Start()
+    private ParticleSystem _currentEffect;
+
+    public void OnPickup() => _isPickedUp = true;
+
+    public void OnDrop()
     {
-        base.Start();
-        if (_extinguisherEffect != null)
-        {
-            _extinguisherEffect.Stop();
-        }
+        _isPickedUp = false;
+        StopUse();
     }
-    
-    public override void Interact(IPlayer player)
+
+    public void Use()
     {
         if (!_isBeingUsed && _isPickedUp)
         {
-            StartExtinguishing();
+            _isBeingUsed = true;
+            _currentUseTime = 0f;
+            _currentEffect = _foamPool.Get();
+            _currentEffect.transform.SetParent(_nozzleTransform);
+            _currentEffect.transform.localPosition = Vector3.zero;
+            _currentEffect.transform.localRotation = Quaternion.identity;
+            _currentEffect.Play();
         }
     }
-    
+
+    public void StopUse()
+    {
+        _isBeingUsed = false;
+        if (_currentEffect != null)
+        {
+            _currentEffect.transform.SetParent(null);
+            _foamPool.Release(_currentEffect);
+            _currentEffect = null;
+        }
+    }
+
     private void Update()
     {
         if (_isBeingUsed)
         {
             _currentUseTime += Time.deltaTime;
-            
             if (_currentUseTime >= _useDuration)
             {
-                StopExtinguishing();
+                StopUse();
             }
-            
-            // Проверяем, есть ли огонь перед игроком
+            // Эффект всегда следует за соплом
+            if (_currentEffect != null)
+            {
+                _currentEffect.transform.position = _nozzleTransform.position;
+                _currentEffect.transform.rotation = _nozzleTransform.rotation;
+            }
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            
             if (Physics.Raycast(ray, out hit, 5f))
             {
-                IFire fire = hit.collider.GetComponent<IFire>();
+                var fire = hit.collider.GetComponent<IFire>();
                 if (fire != null)
                 {
                     fire.Extinguish(_extinguishingPower * Time.deltaTime);
                 }
             }
-        }
-    }
-    
-    private void StartExtinguishing()
-    {
-        _isBeingUsed = true;
-        _currentUseTime = 0f;
-        if (_extinguisherEffect != null)
-        {
-            _extinguisherEffect.Play();
-        }
-    }
-    
-    private void StopExtinguishing()
-    {
-        _isBeingUsed = false;
-        if (_extinguisherEffect != null)
-        {
-            _extinguisherEffect.Stop();
-        }
-    }
-    
-    // Вызывается при подборе предмета
-    public void OnPickup()
-    {
-        _isPickedUp = true;
-        if (_extinguisherEffect != null)
-        {
-            _extinguisherEffect.transform.SetParent(_nozzleTransform);
-            _extinguisherEffect.transform.localPosition = Vector3.zero;
-            _extinguisherEffect.transform.localRotation = Quaternion.identity;
-        }
-    }
-    
-    // Вызывается при выбрасывании предмета
-    public void OnDrop()
-    {
-        _isPickedUp = false;
-        StopExtinguishing();
-        if (_extinguisherEffect != null)
-        {
-            _extinguisherEffect.transform.SetParent(transform);
-            _extinguisherEffect.transform.localPosition = Vector3.zero;
-            _extinguisherEffect.transform.localRotation = Quaternion.identity;
         }
     }
 } 
