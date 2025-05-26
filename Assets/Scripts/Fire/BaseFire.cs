@@ -23,7 +23,12 @@ public abstract class BaseFire : MonoBehaviour, IFire
     public virtual float Intensity 
     { 
         get => _currentIntensity;
-        set => _currentIntensity = Mathf.Clamp(value, 0, _maxIntensity);
+        set
+        {
+            _currentIntensity = Mathf.Clamp(value, 0, _maxIntensity);
+            var main = _fireParticles.main;
+            main.startSize = Mathf.Clamp(0.1f, 1, _currentIntensity / _maxIntensity);
+        }
     }
     
     public virtual float DamagePerSecond => _damagePerSecond;
@@ -52,7 +57,7 @@ public abstract class BaseFire : MonoBehaviour, IFire
             if (playerStats != null)
             {
                 playerStats.TakeDamage(_damagePerSecond * Time.deltaTime);
-                playerStats.IncreaseTemperature(10f * Time.deltaTime);
+                playerStats.UpdateTemperature(10f * Time.deltaTime);
             }
         }
     }

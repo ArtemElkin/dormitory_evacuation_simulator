@@ -8,9 +8,10 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private LayerMask _interactableLayer;
     [SerializeField] private TextMeshProUGUI _interactionText;
     [SerializeField] private Image _interactionPrompt;
-    
+    [SerializeField] private bool _inteactionAvailable = false;
     private Camera _mainCamera;
     private IInteractable _currentInteractable;
+    
     
     private void Start()
     {
@@ -36,6 +37,7 @@ public class InteractionManager : MonoBehaviour
                 var player = GetComponent<IPlayer>();
                 if (player != null)
                 {
+                    Debug.Log("Interacting with ...");
                     _currentInteractable.Interact(player);
                 }
             }
@@ -44,6 +46,7 @@ public class InteractionManager : MonoBehaviour
     
     private void CheckForInteractable()
     {
+        _inteactionAvailable = false;
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         
@@ -55,6 +58,7 @@ public class InteractionManager : MonoBehaviour
             {
                 if (_currentInteractable != interactable)
                 {
+                    _inteactionAvailable = true;
                     _currentInteractable = interactable;
                     ShowInteractionUI(true, interactable.InteractionPrompt);
                 }

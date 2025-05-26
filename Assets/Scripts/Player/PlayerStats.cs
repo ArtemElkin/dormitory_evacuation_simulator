@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerStats : MonoBehaviour
+public class PlayerStats : MonoBehaviour, IPlayer
 {
     [Header("Health Settings")]
     [SerializeField] private float maxHealth = 100f;
@@ -22,6 +22,41 @@ public class PlayerStats : MonoBehaviour
     public UnityEvent<float> onTemperatureChanged;
     public UnityEvent onPlayerDeath;
     
+    // IPlayer interface implementation
+    public float Health 
+    { 
+        get => currentHealth;
+        set
+        {
+            currentHealth = Mathf.Clamp(value, 0, maxHealth);
+            onHealthChanged?.Invoke(currentHealth / maxHealth);
+            if (currentHealth <= 0)
+            {
+                Die();
+            }
+        }
+    }
+    
+    public float Oxygen 
+    { 
+        get => currentOxygen;
+        set
+        {
+            currentOxygen = Mathf.Clamp(value, 0, maxOxygen);
+            onOxygenChanged?.Invoke(currentOxygen / maxOxygen);
+        }
+    }
+    
+    public float Temperature 
+    { 
+        get => currentTemperature;
+        set
+        {
+            currentTemperature = Mathf.Clamp(value, 0, maxTemperature);
+            onTemperatureChanged?.Invoke(currentTemperature / maxTemperature);
+        }
+    }
+    
     private void Start()
     {
         currentHealth = maxHealth;
@@ -32,7 +67,7 @@ public class PlayerStats : MonoBehaviour
     private void Update()
     {
         // Уменьшение кислорода со временем
-        DecreaseOxygen(oxygenDepletionRate * Time.deltaTime);
+        ConsumeOxygen(oxygenDepletionRate * Time.deltaTime);
         
         // Увеличение температуры в зависимости от близости к огню
         // TODO: Добавить проверку близости к огню
@@ -40,32 +75,22 @@ public class PlayerStats : MonoBehaviour
     
     public void TakeDamage(float damage)
     {
-        currentHealth = Mathf.Max(0, currentHealth - damage);
-        onHealthChanged?.Invoke(currentHealth / maxHealth);
-        
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        Health -= damage;
     }
     
-    public void DecreaseOxygen(float amount)
+    public void ConsumeOxygen(float amount)
     {
-        currentOxygen = Mathf.Max(0, currentOxygen - amount);
-        onOxygenChanged?.Invoke(currentOxygen / maxOxygen);
-        
-        if (currentOxygen <= 0)
+        Oxygen -= amount;
+        if (Oxygen <= 0)
         {
             TakeDamage(10f * Time.deltaTime); // Урон от удушья
         }
     }
     
-    public void IncreaseTemperature(float amount)
+    public void UpdateTemperature(float delta)
     {
-        currentTemperature = Mathf.Min(maxTemperature, currentTemperature + amount);
-        onTemperatureChanged?.Invoke(currentTemperature / maxTemperature);
-        
-        if (currentTemperature >= maxTemperature)
+        Temperature += delta;
+        if (Temperature >= maxTemperature)
         {
             TakeDamage(5f * Time.deltaTime); // Урон от высокой температуры
         }
