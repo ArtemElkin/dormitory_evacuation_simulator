@@ -8,6 +8,7 @@ public abstract class BaseFire : MonoBehaviour, IFire
     [SerializeField] protected float _currentIntensity;
     [SerializeField] protected float _spreadRate = 5f;
     [SerializeField] protected float _damagePerSecond = 10f;
+    [SerializeField] protected float _smokeProductionRate = 0.2f;
     
     [Header("Effects")]
     [SerializeField] protected ParticleSystem _fireParticles;
@@ -19,6 +20,8 @@ public abstract class BaseFire : MonoBehaviour, IFire
     
     protected List<BaseFire> _spreadFires = new List<BaseFire>();
     protected bool _isSpreading = false;
+    protected bool _isActive = false;
+    protected ParticleSystem _smokeParticles;
     
     public virtual float Intensity 
     { 
@@ -38,7 +41,12 @@ public abstract class BaseFire : MonoBehaviour, IFire
         _currentIntensity = _maxIntensity;
         if (_fireParticles != null)
         {
-            _fireParticles.Play();
+            _fireParticles.Stop();
+        }
+        _fireParticles = GetComponentInChildren<ParticleSystem>();
+        if (_fireParticles != null)
+        {
+            _fireParticles.Stop();
         }
     }
     
@@ -100,5 +108,38 @@ public abstract class BaseFire : MonoBehaviour, IFire
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, _spreadRadius);
+    }
+    
+    public virtual void Activate()
+    {
+        _isActive = true;
+        if (_fireParticles != null)
+        {
+            _fireParticles.Play();
+        }
+    }
+    
+    public virtual void Deactivate()
+    {
+        _isActive = false;
+        if (_fireParticles != null)
+        {
+            _fireParticles.Stop();
+        }
+    }
+    
+    protected virtual void OnTriggerStay(Collider other)
+    {
+        if (!_isActive) return;
+        
+        if (other.CompareTag("Player"))
+        {
+            // Нанесение урона игроку
+            var player = other.GetComponent<IPlayer>();
+            if (player != null)
+            {
+                player.TakeDamage(_damagePerSecond * Time.deltaTime);
+            }
+        }
     }
 } 

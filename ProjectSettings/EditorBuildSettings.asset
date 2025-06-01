@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/msg floor 1.unity
+    guid: f86bd02e1f0a35d4899cf3936f5a8e63
   m_configObjects: {}

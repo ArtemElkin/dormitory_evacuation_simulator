@@ -1,8 +1,6 @@
 using UnityEngine;
 using Scripts.Interfaces;
 
-// Не забудь добавить этот using, если класс ParticleSystemPool в другом namespace
-// using YourNamespace;
 
 public class FireExtinguisher : MonoBehaviour, IPickable
 {

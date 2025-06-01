@@ -8,7 +8,7 @@ public abstract class BaseInteractable : MonoBehaviour, IInteractable
     
     protected Renderer _objectRenderer;
     protected Material _originalMaterial;
-    [SerializeField] protected Material _highlightMaterial;
+    [SerializeField] protected GameObject _highlightObject;
     
     protected virtual void Start()
     {
@@ -26,9 +26,9 @@ public abstract class BaseInteractable : MonoBehaviour, IInteractable
     
     public virtual void Highlight(bool highlight)
     {
-        if (_objectRenderer != null && _highlightMaterial != null)
+        if (_objectRenderer != null && _highlightObject != null)
         {
-            _objectRenderer.material = highlight ? _highlightMaterial : _originalMaterial;
+            _highlightObject.SetActive(highlight);
         }
     }
     
